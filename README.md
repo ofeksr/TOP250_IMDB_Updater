@@ -6,26 +6,27 @@
 
 ### Usage:
 ```
-from main import Top250Updater
+from __init__ import IMDBTOP250Updater
 
-t = Top250Updater()
-t.import_json()
+updater = IMDBTOP250Updater.import_database()
 
-t.update_list()
-t.save_json()
+updater.delete_seen_from_email(email_address='email_addres's, password='password')
 
-t.send_email(receiver_email, sender_mail, sender_password)
+updater.update_list()
+updater.save_database()
+
+updater.send_email(receiver_email='receiver_email', sender_mail='sender_mail', sender_password='sender_password')
 ``` 
 
 ### Installation
-1. install requirements.txt
-2. Run:
-    ```
-    t = Top250Updater()
-    t.create_list(check_seen=True)
-    t.save_json()
-    ```
-3. next time run with 'update list'.
+1. Install requirements.txt
+2. On first run create your own movie database:
+```
+updater = IMDBTOP250Updater()
+updater.create_list()
+updater.save_database()
+```
+3. Next time run scheduled script as above in 'Usage' section.
 
 
 ### Email message example:
