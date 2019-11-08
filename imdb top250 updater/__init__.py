@@ -18,13 +18,13 @@ from tabulate import tabulate
 
 import imdb_exceptions
 
-LOG = imdb_exceptions.create_logger()
-
 
 class IMDBTOP250Updater:
 
+    LOG = imdb_exceptions.create_logger()
+
     def __init__(self, top250=None, removed_movies=None):
-        LOG.debug('Initialising IMDBTOP250Updater object')
+        self.LOG.debug('Initialising IMDBTOP250Updater object')
         if top250 is None:
             top250 = {}
         if removed_movies is None:
@@ -33,7 +33,7 @@ class IMDBTOP250Updater:
         self.removed_movies = removed_movies
         self.new_movies: list = []
         self.new_movie_flag: bool = False  # to check if new movie added to database so script need to send email report
-        LOG.info('IMDBTOP250Updater object created successfully')
+        self.LOG.info('IMDBTOP250Updater object created successfully')
 
     @classmethod
     def import_database(cls):
@@ -44,14 +44,14 @@ class IMDBTOP250Updater:
         """
 
         try:
-            LOG.debug('Trying to read json file, import user top 250 database')
+            cls.LOG.debug('Trying to read json file, import user top 250 database')
             with open('database/imdb_db.json') as file:
                 data = json.load(file)
-                LOG.info(f'Import {file.name} finished')
+                cls.LOG.info(f'Import {file.name} finished')
                 return cls(data['top250'], data['removed_movies'])
 
         except Exception as e:
-            LOG.exception('Failed to import database')
+            cls.LOG.exception('Failed to import database')
             raise IOError(f'Error while importing database. {e}')
 
     def save_database(self) -> bool:
@@ -61,17 +61,17 @@ class IMDBTOP250Updater:
         """
 
         try:
-            LOG.debug('Trying to write json file, save user top 250 database')
+            self.LOG.debug('Trying to write json file, save user top 250 database')
             if not os.path.isdir('database'):
                 os.mkdir('database')
             with open('database/imdb_db.json', 'w') as file:
                 json.dump({'top250': self.top250, 'removed_movies': self.removed_movies}, file,
                           indent=4, separators=(',', ': '))
-                LOG.info(f'Save {file.name} finished')
+                self.LOG.info(f'Save {file.name} finished')
                 return True
 
         except Exception as e:
-            LOG.exception('Failed to save database')
+            self.LOG.exception('Failed to save database')
             raise IOError(f'Error while saving database, {e}')
 
     def create_list(self, check_seen: bool = False, export_dict: bool = False) -> bool or dict:
@@ -83,12 +83,12 @@ class IMDBTOP250Updater:
         """
 
         try:
-            LOG.debug('Trying to web scrap imdb website')
+            self.LOG.debug('Trying to web scrap imdb website')
             url = 'https://www.imdb.com/chart/top'
             response = requests.get(url)
 
         except Exception as e:
-            LOG.exception('Failed to get respond from imdb website')
+            self.LOG.exception('Failed to get respond from imdb website')
             raise ConnectionError(f'Failed to get respond from imdb website, {e}')
 
         soup = BeautifulSoup(response.text, 'lxml')
@@ -139,7 +139,7 @@ class IMDBTOP250Updater:
 
         else:
             self.top250 = top250
-            LOG.info('Finished creating new movies list')
+            self.LOG.info('Finished creating new movies list')
             return True
 
     def print_movies(self) -> bool:
@@ -163,7 +163,7 @@ class IMDBTOP250Updater:
                 if movie['Movie'] == title:
                     removed_movie = self.top250.pop(i)
                     self.removed_movies.append(removed_movie['Movie'])
-                    LOG.info(f'{title} has been removed from list')
+                    self.LOG.info(f'{title} has been removed from list')
                     break
 
         elif place:
@@ -172,10 +172,10 @@ class IMDBTOP250Updater:
                 if int(i) == int(place):
                     removed_movie = self.top250.pop(i)
                     self.removed_movies.append(removed_movie['Movie'])
-                    LOG.info(f'{removed_movie["Movie"]} has been removed from list')
+                    self.LOG.info(f'{removed_movie["Movie"]} has been removed from list')
                     break
 
-        LOG.info(f'Movie {title}, {place} removed from list')
+        self.LOG.info(f'Movie {title}, {place} removed from list')
         return True
 
     def update_list(self) -> bool:
@@ -198,14 +198,14 @@ class IMDBTOP250Updater:
                 continue
 
             else:
-                LOG.info(f'NEW MOVIE ADDED !!!!\n'
+                self.LOG.info(f'NEW MOVIE ADDED !!!!\n'
                          f'{i}. {movie["Movie"]} / ({movie["Year"]}) / {movie["Rating"]} / {movie["Seen"]}')
                 new_top250[i] = movie
                 self.new_movies.append(movie['Link'])
                 self.new_movie_flag = True
 
         self.top250 = new_top250
-        LOG.info('Finish updating movies list')
+        self.LOG.info('Finish updating movies list')
         return True
 
     def change_seen_status(self, title: str = '', place: int or str = '', status: bool = None) -> bool:
@@ -220,18 +220,18 @@ class IMDBTOP250Updater:
         if title:
             i = [key for key, val in self.top250.items() if val['Movie'] == title][0]
             self.top250[i]['Seen'] = status
-            LOG.info(f'{title} status has been updated')
+            self.LOG.info(f'{title} status has been updated')
             return True
 
         elif place:
             place = str(place)
             if place in self.top250:
                 self.top250[place]['Seen'] = status
-                LOG.info(f'{self.top250[place]["Movie"]} status has been updated')
+                self.LOG.info(f'{self.top250[place]["Movie"]} status has been updated')
                 return True
 
             else:
-                LOG.info(f'Movie in place {place} did not found in list')
+                self.LOG.info(f'Movie in place {place} did not found in list')
                 return True
 
         else:
@@ -289,12 +289,12 @@ class IMDBTOP250Updater:
         for i, url in enumerate(self.new_movies, start=1):
 
             try:
-                LOG.debug(f'Trying to web scrap {url}')
+                self.LOG.debug(f'Trying to web scrap {url}')
                 response = requests.get(url)
                 soup_new_movies = BeautifulSoup(response.text, 'lxml')
 
             except Exception as e:
-                LOG.exception(f'Failed to web scrap {url}')
+                self.LOG.exception(f'Failed to web scrap {url}')
                 raise imdb_exceptions.WebScrapEvents(f'Failed to web scrap {url}', e)
 
             poster_tag = soup_new_movies.findAll('div', {'class': 'poster'})
@@ -305,7 +305,7 @@ class IMDBTOP250Updater:
 
             contents.append((url, poster_link, trailer_link))
 
-        LOG.info('Finish web scrapping for new movies')
+        self.LOG.info('Finish web scrapping for new movies')
         return contents
 
     def send_email(self, receiver_email: str, sender_mail: str, sender_password: str) -> bool:
@@ -350,18 +350,18 @@ class IMDBTOP250Updater:
             contents.append(bottom)
 
             try:
-                LOG.debug('Trying to send email.')
+                self.LOG.debug('Trying to send email.')
                 yag = yagmail.SMTP(sender_mail, sender_password)
                 yag.send(receiver_email, subject, contents)
-                LOG.info(f'Email sent successfully to {receiver_email}')
+                self.LOG.info(f'Email sent successfully to {receiver_email}')
                 return True
 
             except Exception as e:
-                LOG.exception(f'Failed to send email message')
+                self.LOG.exception(f'Failed to send email message')
                 raise ConnectionError(f'Error in sending email message, {e}')
 
         else:
-            LOG.info('No need to send email message')
+            self.LOG.info('No need to send email message')
             return True
 
     def delete_seen_from_email(self, email_address: str, password: str) -> bool:
@@ -370,13 +370,13 @@ class IMDBTOP250Updater:
         example: email content - 'delete: 2' or 'seen: 150'
         :return: True
         """
-        LOG.debug('Start check email replays for actions')
+        self.LOG.debug('Start check email replays for actions')
 
         global need_to_delete
         need_to_delete = False
 
         def read_email_from_gmail(delete_emails=False):
-            LOG.debug('Logging to email account to read messages')
+            self.LOG.debug('Logging to email account to read messages')
             smtp_server = "imap.gmail.com"
 
             mail = imaplib.IMAP4_SSL(smtp_server)
@@ -392,14 +392,14 @@ class IMDBTOP250Updater:
                 mail.expunge()
                 mail.close()
                 mail.logout()
-                LOG.info(f'{len(emails_list)} Emails deleted')
+                self.LOG.info(f'{len(emails_list)} Emails deleted')
                 return
 
             mail_ids = data[0]
             id_list = mail_ids.split()
 
             if len(id_list) == 0:
-                LOG.info('Inbox is empty')
+                self.LOG.info('Inbox is empty')
                 return
             else:
                 global need_to_delete
@@ -422,7 +422,7 @@ class IMDBTOP250Updater:
                     if 'delete:' in string and string.startswith('delete:'):
                         delete.append(string.split('\\r')[0].strip('delete: '))
 
-            LOG.info('Finish reading email messages for actions')
+            self.LOG.info('Finish reading email messages for actions')
             return list(set(seen)), list(set(delete))
 
         lists = read_email_from_gmail()
@@ -441,5 +441,5 @@ class IMDBTOP250Updater:
         if need_to_delete:
             read_email_from_gmail(delete_emails=True)
 
-        LOG.info('Finished check email replays and changing user database')
+        self.LOG.info('Finished check email replays and changing user database')
         return True

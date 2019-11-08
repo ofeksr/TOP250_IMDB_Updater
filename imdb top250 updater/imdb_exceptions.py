@@ -4,10 +4,9 @@ import shutil
 import sys
 from datetime import datetime
 
-import __init__
-
 TODAY = datetime.strftime(datetime.today(), '%d.%m.%Y')
 NOW = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+
 
 class IMDBError(Exception):
     """
@@ -42,7 +41,6 @@ def create_logger():
 
 def log_error_to_desktop(exception):
     """for creating copy of log file on desktop when schedule script failed to complete."""
-    __init__.LOG.exception('Script not fully finished, error file created')
     shutil.copy2('logs/IMDB_Logger.log', f'logs/IMDB_Logger_{TODAY}.log')
     try:
         shutil.move(f'logs/IMDB_Logger_{TODAY}.log', f'C:/Users/{os.getlogin()}/Desktop')
