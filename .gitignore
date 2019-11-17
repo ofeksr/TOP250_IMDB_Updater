@@ -1,7 +1,6 @@
 /imdb top250 updater/logs
 /imdb top250 updater/database
 /imdb top250 updater/imdb_schedule.bat
-/.gitignore
 /.idea
 /__pycache__
 /imdb top250 updater/__pycache__

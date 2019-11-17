@@ -16,12 +16,12 @@ import yagmail
 from bs4 import BeautifulSoup
 from tabulate import tabulate
 
-import imdb_exceptions
+import exceptions
 
 
 class IMDBTOP250Updater:
 
-    LOG = imdb_exceptions.create_logger()
+    LOG = exceptions.create_logger()
 
     def __init__(self, top250=None, removed_movies=None):
         self.LOG.debug('Initialising IMDBTOP250Updater object')
@@ -32,7 +32,7 @@ class IMDBTOP250Updater:
         self.top250 = top250
         self.removed_movies = removed_movies
         self.new_movies: list = []
-        self.new_movie_flag: bool = False  # to check if new movie added to database so script need to send email report
+        self.new_movie_flag: bool = False  # to check if new movie added to database so script need to send email
         self.LOG.info('IMDBTOP250Updater object created successfully')
 
     @classmethod
@@ -295,7 +295,7 @@ class IMDBTOP250Updater:
 
             except Exception as e:
                 self.LOG.exception(f'Failed to web scrap {url}')
-                raise imdb_exceptions.WebScrapEvents(f'Failed to web scrap {url}', e)
+                raise exceptions.WebScrapEvents(f'Failed to web scrap {url}', e)
 
             poster_tag = soup_new_movies.findAll('div', {'class': 'poster'})
             poster_link = str(poster_tag).split('src=')[1].split(' title')[0]

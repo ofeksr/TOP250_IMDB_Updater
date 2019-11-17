@@ -3,8 +3,8 @@ import shutil
 
 import keyring
 
-from __init__ import IMDBTOP250Updater
-from imdb_exceptions import log_error_to_desktop
+from imdb_updater import IMDBTOP250Updater
+from exceptions import log_error_to_desktop
 
 updater = None
 

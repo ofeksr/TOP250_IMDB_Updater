@@ -4,7 +4,7 @@ from os import environ
 import keyring
 import os
 
-from __init__ import IMDBTOP250Updater
+from imdb_updater import IMDBTOP250Updater
 from imdb_schedule import run_script
 
 
