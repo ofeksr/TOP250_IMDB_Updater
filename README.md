@@ -12,7 +12,7 @@ updater = IMDBTOP250Updater.import_database()
 
 updater.delete_seen_from_email(email_address='email_addres's, password='password')
 
-updater.update_list()
+updater.update_top250()
 updater.save_database()
 
 updater.send_email(receiver_email='receiver_email', sender_mail='sender_mail', sender_password='sender_password')

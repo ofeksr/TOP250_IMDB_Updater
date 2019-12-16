@@ -39,12 +39,10 @@ def create_logger():
     return LOG
 
 
-def log_error_to_desktop(exception):
-    """for creating copy of log file on desktop when schedule script failed to complete."""
+def log_error_to_desktop():
+    """for creating copy of log file on desktop when schedule script failed to complete"""
     shutil.copy2('logs/IMDB_Logger.log', f'logs/IMDB_Logger_{TODAY}.log')
     try:
         shutil.move(f'logs/IMDB_Logger_{TODAY}.log', f'C:/Users/{os.getlogin()}/Desktop')
     except shutil.Error:
-        os.remove(f'IMDB_Logger_{TODAY}.log')
-    finally:
-        raise exception
+        os.remove(f'logs/IMDB_Logger_{TODAY}.log')

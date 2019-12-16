@@ -1,46 +1,49 @@
 import os
 import shutil
 
-import keyring
-
-from imdb_updater import IMDBTOP250Updater
+from data.config import *
 from exceptions import log_error_to_desktop
-
-updater = None
+from imdb_updater import IMDBTOP250Updater, LOG
 
 
 def run_script():
-    global updater
-    email_address = os.environ.get('imdb_email')
-    password = keyring.get_password('imdb-pass', 'ofeksofeks')
-
-    receiver_email = os.environ.get('my_email')
-    sender_mail = os.environ.get('imdb_email')
-    sender_password = keyring.get_password('imdb-pass', 'ofeksofeks')
 
     try:
+        updater = IMDBTOP250Updater()
 
-        updater = IMDBTOP250Updater.import_database()
+        # check for delete or check seen status actions from last replies
+        updater.check_email_replies()
 
-        updater.delete_seen_from_email(email_address=email_address, password=password)
+        # # enable for testing email
+        # updater.top250_db.delete_movie(title='Joker')
+        # updater.top250_db.removed_movies_db.delete_movie(title='Joker')
 
-        updater.update_list()
-        updater.save_database()
+        # update top250 list
+        updater.update_top250()
+
+        # send email report with new movies and unseen movies
+        if updater.new_movie_flag:
+            updater.send_email(receiver_email=receiver_email, sender_mail=sender_mail, sender_password=sender_password)
+        else:
+            updater.LOG.info('No need to send email message')
+
+        # close connections
+        updater.root_db.close_cursor()
+        updater.root_db.close_connection()
+
+        updater.root_db.backup_database()
 
         backup_path = f'C:/Users/{os.getlogin()}/PycharmProjects/Backup Databases'
         if not os.path.isdir(backup_path):
             os.mkdir(backup_path)
 
-        shutil.copy('database/imdb_db.json',
-                    f'C:/Users/{os.getlogin()}/PycharmProjects/Backup Databases')
-
-        updater.send_email(receiver_email=receiver_email, sender_mail=sender_mail, sender_password=sender_password)
+        shutil.copy(f'database/{updater.root_db.db_name}_backup.sql', backup_path)
 
         return True
 
-    except Exception as e:
-        IMDBTOP250Updater.LOG.exception('Script not fully finished, error file created')
-        log_error_to_desktop(e)
+    except Exception:
+        LOG.exception('Script not fully finished, error file created')
+        log_error_to_desktop()
 
 
 if __name__ == '__main__':

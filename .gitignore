@@ -1,9 +1,11 @@
-/imdb top250 updater/logs
-/imdb top250 updater/database
-/imdb top250 updater/imdb_schedule.bat
-/.idea
-/__pycache__
-/imdb top250 updater/__pycache__
-/venv
-/test/database
-/test/logs
+imdb top250 updater/logs
+imdb top250 updater/data
+imdb top250 updater/database
+imdb top250 updater/imdb_schedule.bat
+.idea
+__pycache__
+imdb top250 updater/__pycache__
+venv
+tests/database
+tests/logs
+tests/data
