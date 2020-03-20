@@ -1,11 +1,22 @@
-imdb top250 updater/logs
-imdb top250 updater/data
-imdb top250 updater/database
-imdb top250 updater/imdb_schedule.bat
-.idea
+imdb_top250_updater/logs/IMDB_Logger.log
+
+imdb_top250_updater/database/imdb_backup.sql
+imdb_top250_updater/database/mysql_config.py
+
+imdb_top250_updater/data/config.py
+
+imdb_top250_updater/email_tools/credentials.json
+imdb_top250_updater/email_tools/gmail_token.pickle
+imdb_top250_updater/email_tools/gmail_vars.py
+
+tests/database/
+tests/logs/
+tests/data/
+/tests/email_tools/
+
+imdb_top250_updater/imdb_schedule.bat
+imdb_top250_updater/__pycache__
+
 __pycache__
-imdb top250 updater/__pycache__
+.idea
 venv
-tests/database
-tests/logs
-tests/data

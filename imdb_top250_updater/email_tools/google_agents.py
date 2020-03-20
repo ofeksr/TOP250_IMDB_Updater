@@ -5,6 +5,7 @@ Note:
 """
 
 __version__ = '1.3'
+
 # v1.0 - first stable release
 # v1.1 - added google calendar class
 # v1.2 - added order_list_items_by_date function
@@ -23,6 +24,8 @@ import keyring
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+
+from gmail_vars import *
 
 LOG = logging.getLogger('Google.Agents.Logger')
 handler = logging.StreamHandler(sys.stdout)
@@ -44,8 +47,8 @@ class GmailAgent:
         # The file token.pickle stores the user's access and refresh tokens, and is
         # created automatically when the authorization flow completes for the first
         # time.
-        if os.path.exists('database/gmail_token.pickle'):
-            with open('database/gmail_token.pickle', 'rb') as token:
+        if os.path.exists(path_to_gmail_token):
+            with open(path_to_gmail_token, 'rb') as token:
                 self.__credentials = pickle.load(token)
 
         # If there are no (valid) credentials available, let the user log in.
@@ -56,11 +59,11 @@ class GmailAgent:
                 SCOPES = ['https://mail.google.com/', 'https://www.googleapis.com/auth/gmail.modify',
                           'https://www.googleapis.com/auth/gmail.compose', 'https://www.googleapis.com/auth/gmail.send']
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'database/credentials.json', SCOPES)
+                    path_to_credentials, SCOPES)
                 self.__credentials = flow.run_local_server(port=0)
 
             # Save the credentials for the next run
-            with open('database/gmail_token.pickle', 'wb') as token:
+            with open(path_to_gmail_token, 'wb') as token:
                 pickle.dump(self.__credentials, token)
                 LOG.info('Gmail token accepted')
 
@@ -83,7 +86,10 @@ class GmailAgent:
 
     def get_message(self, message_id: str) -> str:
         message = self.__service.users().messages().get(userId='me', id=message_id, format='full').execute()
-        msg_str = base64.urlsafe_b64decode(message['payload']['parts'][0]['body']['data']).decode('utf-8')
+        try:
+            msg_str = base64.urlsafe_b64decode(message['payload']['parts'][0]['body']['data']).decode('utf-8')
+        except:
+            msg_str = ' 6 '
         return msg_str
 
     @staticmethod
@@ -132,7 +138,7 @@ class GoogleCalendarAgent:
             else:
                 SCOPES = ['https://www.googleapis.com/auth/calendar']
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    'database/credentials.json', SCOPES)
+                    'credentials.json', SCOPES)
                 self.__credentials = flow.run_local_server(port=0)
 
             # Save the credentials for the next run

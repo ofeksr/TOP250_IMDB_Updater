@@ -2,7 +2,7 @@ import unittest
 
 import os
 
-from imdb_updater import IMDBTOP250Updater
+from updater.imdb_updater import IMDBTOP250Updater
 from tests.data.tests_config import *
 
 
@@ -14,7 +14,6 @@ class TestIMDBTop250Updater(unittest.TestCase):
                 os.mkdir(path)
 
         self.updater = IMDBTOP250Updater(db_name='imdb_unittest')
-        self.updater.create_list()
 
     def tearDown(self) -> None:
         self.updater.root_db.drop_database()
@@ -28,31 +27,35 @@ class TestIMDBTop250Updater(unittest.TestCase):
                         msg='Failed to create new top 250 movies list')
 
     def test_print_movies(self):
+        self.updater.create_list(check_seen=False)
         self.assertTrue(self.updater.print_movies(),
                         msg='Failed to prints movies')
 
     def test_remove_movie(self):
+        self.updater.create_list(check_seen=False)
         for i in range(2):
             with self.subTest(msg=i):
                 if i == 0:
-                    self.assertTrue(self.updater.remove_movie(title='The Dark Knight'),
-                                    msg='Failed to remove movie by title of str name')
+                    self.assertIsNotNone(self.updater.remove_movie(title='The Dark Knight'),
+                                         msg='Failed to remove movie by title of str name')
                 else:
                     try:
                         for n in range(10):
-                            self.assertTrue(self.updater.remove_movie(place=n),
-                                            msg='Failed to remove movie by title of int number')
-                            break
+                            self.assertIsNotNone(self.updater.remove_movie(place=n),
+                                                 msg='Failed to remove movie by title of int number')
                     except:
                         pass
 
     def test_update_list(self):
+        self.updater.create_list(check_seen=False)
         self.updater.remove_movie(title='The Dark Knight')
+        self.updater.top250_db.removed_movies_db.delete_movie(title='The Dark Knight')
 
         self.assertTrue(self.updater.update_top250(),
                         msg='Failed to updating list')
 
     def test_check_seen(self):
+        self.updater.create_list(check_seen=False)
         for i in range(4):
             with self.subTest(msg=i):
                 if i == 0:
@@ -71,6 +74,7 @@ class TestIMDBTop250Updater(unittest.TestCase):
                 #                     msg='Failed to check seen status for all movies')
 
     def test_unseen_movies(self):
+        self.updater.create_list(check_seen=False)
         for i in range(2):
             with self.subTest(msg=i):
                 if i == 0:
@@ -83,23 +87,19 @@ class TestIMDBTop250Updater(unittest.TestCase):
 
     def test_new_movie_details(self):
         self.test_update_list()
-        self.assertIsInstance(self.updater.new_movie_details(),
+        self.assertIsInstance(self.updater.new_movie_details_for_email_contents(),
                               list,
                               msg='Failed to get new movies details')
 
     def test_send_email(self):
+        self.updater.create_list(check_seen=False)
         self.updater.remove_movie(title='The Dark Knight')
+        self.updater.top250_db.removed_movies_db.delete_movie(title='The Dark Knight')
         self.updater.update_top250()
 
         self.assertTrue(self.updater.send_email(receiver_email, sender_mail, sender_password),
-                        msg='Failed to send email report')
+                        msg='Failed to send email_tools report')
 
     def test_check_email_replies(self):
-        for i in range(2):
-            with self.subTest(msg=i):
-                if i == 0:
-                    self.assertTrue(self.updater.check_email_replies(),
-                                    msg='Failed to change movie status from email reply')
-                else:
-                    self.assertTrue(self.updater.check_email_replies(),
-                                    msg='Failed to delete movie from email reply')
+        self.assertTrue(self.updater.check_email_replies(),
+                        msg='Failed to change movie status from email_tools reply')
